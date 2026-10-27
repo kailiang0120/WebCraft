@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebCraft — 网页版我的世界</title>
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+
+    <div id="hud">
+      <div id="crosshair"></div>
+      <div id="item-name"></div>
+      <div id="hotbar-wrap">
+        <div id="armor"></div>
+        <div id="bars"><div id="health"></div><div id="food"></div></div>
+        <div id="hotbar"></div>
+      </div>
+      <pre id="debug"></pre>
+      <div id="water-overlay"></div>
+      <div id="lava-overlay"></div>
+      <canvas id="fire-overlay"></canvas>
+      <div id="damage-overlay"></div>
+      <div id="toast"></div>
+      <div id="click-hint"><span>点击屏幕继续游戏</span></div>
+    </div>
+
+    <div id="screen" class="hidden"></div>
+    <div id="cursor-item"></div>
+    <div id="tooltip"></div>
+
+    <!-- Title -->
+    <div id="menu-title" class="menu">
+      <h1 class="logo">WEBCRAFT</h1>
+      <div class="splash">Three.js + WebGL！</div>
+      <div class="menu-body">
+        <button id="btn-continue" class="btn hidden">继续游戏</button>
+        <div id="continue-info" class="info hidden"></div>
+        <div class="box">
+          <label>世界种子（留空随机）</label>
+          <input id="seed-input" type="text" placeholder="例如：minecraft" maxlength="32" />
+          <label>游戏模式</label>
+          <div class="seg">
+            <button class="seg-btn active" data-mode="survival">生存</button>
+            <button class="seg-btn" data-mode="creative">创造</button>
+          </div>
+          <button id="btn-new" class="btn">创建新世界</button>
+        </div>
+        <button id="btn-help" class="btn">操作说明</button>
+      </div>
+    </div>
+
+    <!-- Help -->
+    <div id="menu-help" class="menu hidden">
+      <h2>操作说明</h2>
+      <div class="help">
+        <div><b>W A S D</b> 移动　<b>空格</b> 跳跃 / 游泳上浮　<b>Shift</b> 潜行（不会掉下边缘）</div>
+        <div><b>Ctrl / R</b> 疾跑　<b>鼠标</b> 视角　<b>滚轮 / 1-9</b> 切换物品栏</div>
+        <div><b>左键</b> 挖掘方块（按住）　<b>右键</b> 放置方块 / 打开工作台、熔炉、箱子</div>
+        <div><b>中键</b> 选取方块　<b>E</b> 背包 &amp; 2×2 合成　<b>Q</b> 丢弃物品</div>
+        <div><b>F</b> / 双击空格 创造模式飞行　<b>G</b> 创造模式生成随机生物　<b>F3</b> 调试信息　<b>Esc</b> 暂停菜单</div>
+        <div><b>左键</b> 点击攻击生物　<b>按住右键</b> 吃食物 / 拉弓（松开射箭）</div>
+        <h3>生物</h3>
+        <div>白天草地上会出现猪、牛、羊、鸡；夜晚和黑暗的洞穴里会出现僵尸、骷髅、苦力怕、蜘蛛。</div>
+        <div><b>原创怪物 · 岩傀</b>：伪装成石头，靠近时突然苏醒。用镐打它伤害翻倍，其他武器减半，偶尔掉钻石。</div>
+        <div><b>原创怪物 · 幽光灵</b>：夜里发光的漂浮幽灵，会绕着你转圈再猛冲过来。掉落的幽光粉 ×4 可合成发光的幽光灯。</div>
+        <div>饥饿值低于 3 格无法疾跑，饿到 0 会掉血；饱食度满时会自动回血。生肉放进熔炉可以烤熟。</div>
+        <h3>火与 TNT · 盔甲</h3>
+        <div><b>打火石</b>（铁锭 + 燧石）点火；火会蔓延到木头、树叶、羊毛、草上并把它们烧掉。左键点火焰所在的方块面可以灭火。</div>
+        <div><b>TNT</b>（火药 + 沙子）用打火石或火点燃，4 秒后爆炸，会引爆附近的 TNT。</div>
+        <div><b>盔甲</b>：皮革/铁/金/钻石，按 E 后放进左侧 4 格或手持右键穿上，能减少受到的伤害。</div>
+        <div>背包内：<b>按住拖动</b>平均分配物品，<b>双击</b>收集同类物品，鼠标悬停按 <b>1-9</b> 与快捷栏交换。</div>
+        <h3>入门</h3>
+        <div>1. 徒手撸树得到原木 → 背包里合成木板 → 4 个木板合成工作台。</div>
+        <div>2. 放下工作台右键打开，用木板+木棍合成木镐，就能挖石头了。</div>
+        <div>3. 8 个圆石围一圈 = 熔炉；8 个木板围一圈 = 箱子；煤炭 + 木棍 = 火把。</div>
+        <div>4. 熔炉可以把铁矿石、金矿石炼成锭，沙子烧成玻璃，原木烧成木炭（煤炭）。</div>
+        <div>5. 石镐才能挖铁矿，铁镐才能挖金矿和钻石矿。晚上和洞穴里记得带火把！</div>
+      </div>
+      <button id="btn-help-back" class="btn">返回</button>
+    </div>
+
+    <!-- Loading -->
+    <div id="menu-loading" class="menu hidden">
+      <h2>正在生成地形…</h2>
+      <div class="bar"><div id="load-bar"></div></div>
+    </div>
+
+    <!-- Pause -->
+    <div id="menu-pause" class="menu overlay hidden">
+      <h2>游戏菜单</h2>
+      <div class="menu-body">
+        <button id="btn-resume" class="btn">回到游戏</button>
+        <div class="box">
+          <label>渲染距离：<span id="val-rd"></span> 区块</label>
+          <input id="set-rd" type="range" min="2" max="12" step="1" />
+          <label>视野：<span id="val-fov"></span></label>
+          <input id="set-fov" type="range" min="50" max="110" step="1" />
+          <label>鼠标灵敏度：<span id="val-sens"></span></label>
+          <input id="set-sens" type="range" min="0.2" max="3" step="0.1" />
+          <label>音量：<span id="val-vol"></span></label>
+          <input id="set-vol" type="range" min="0" max="1" step="0.05" />
+        </div>
+        <button id="btn-mode" class="btn">游戏模式：生存</button>
+        <button id="btn-difficulty" class="btn">难度：普通</button>
+        <button id="btn-save" class="btn">保存游戏</button>
+        <button id="btn-quit" class="btn">保存并退出到标题画面</button>
+      </div>
+    </div>
+
+    <!-- Death -->
+    <div id="menu-death" class="menu overlay death hidden">
+      <h2>你死了！</h2>
+      <div id="death-msg" class="info"></div>
+      <button id="btn-respawn" class="btn">重生</button>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
